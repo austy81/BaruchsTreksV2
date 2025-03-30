@@ -41,6 +41,11 @@ jobs:
           BARUCHSTREKS_STORAGE_CONNECTION: ${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
       
+      # Make startup script executable
+      - name: Make startup script executable
+        run: |
+          chmod +x startup.sh
+      
       # Create deployment package
       - name: Prepare artifact for deployment
         run: zip -r release.zip . -x "*.git*" "release.zip"
@@ -114,8 +119,8 @@ jobs:
             SCM_DO_BUILD_DURING_DEPLOYMENT="0" \
             WEBSITE_RUN_FROM_PACKAGE="1"
           
-          # Set startup command
-          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
+          # Set startup command to use our startup script
+          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "startup.sh"
       
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
@@ -124,4 +129,3 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-
