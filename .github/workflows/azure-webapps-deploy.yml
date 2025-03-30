@@ -44,8 +44,13 @@ jobs:
       # Create deployment package
       - name: Prepare artifact for deployment
         run: |
-          # List files to verify
-          ls -la
+          # Create the startup script
+          echo "#!/bin/bash" > startup.sh
+          echo "cd /home/site/wwwroot" >> startup.sh
+          echo "pip install -r requirements.txt" >> startup.sh
+          echo "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000" >> startup.sh
+          chmod +x startup.sh
+          
           # Create the zip file
           zip -r release.zip ./* -x "*.git*"
       
@@ -114,27 +119,9 @@ jobs:
             DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
             DISABLE_COLLECTSTATIC="1" \
             SCM_DO_BUILD_DURING_DEPLOYMENT="true"
-      
-      # Create startup command file
-      - name: Create startup command file
-        run: |
-          echo "#!/bin/bash" > startup.sh
-          echo "cd /home/site/wwwroot" >> startup.sh
-          echo "pip install -r requirements.txt" >> startup.sh
-          echo "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000" >> startup.sh
-          chmod +x startup.sh
-          cat startup.sh
-      
-      # Upload startup script to the web app
-      - name: Upload startup script
-        run: |
-          az webapp deploy --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --src-path startup.sh --target-path /home/site/wwwroot/startup.sh --type startup
-      
-      # Set startup command after deployment
-      - name: Set startup command
-        run: |
-          # Set startup command to use our startup script
-          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "/home/site/wwwroot/startup.sh"
+          
+          # Set startup command
+          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-command "sh /home/site/wwwroot/startup.sh"
       
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
