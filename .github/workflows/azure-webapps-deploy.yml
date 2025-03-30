@@ -49,7 +49,10 @@ jobs:
       # Configure Azure Web App
       - name: Configure Azure Web App
         run: |
+          # Set Python version
           az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.11"
+          
+          # Configure environment variables
           az webapp config appsettings set --resource-group BaruchsTreks --name baruchstreks --settings \
             BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
             MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
@@ -59,29 +62,31 @@ jobs:
             SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_WEBDEPLOY_USE_SCM="false"
           
-      # Set startup command
-      - name: Set startup command
-        run: |
+          # Set startup command
           az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
       
-      # Create deployment package
-      - name: Create deployment package
+      # Prepare deployment package
+      - name: Prepare deployment package
         run: |
-          mkdir -p deployment
-          # Copy specific files and directories instead of the entire directory
-          cp -r *.py *.txt *.sh .deployment baruchstreks templates trips static deployment/
-          # Exclude .git and other unnecessary directories
-          cd deployment
-          pip install -r requirements.txt --target=site-packages
-          cp -r site-packages/* .
-          rm -rf site-packages
+          # Create deployment directory
+          mkdir -p deployment_package
+          
+          # Copy necessary files
+          cp -r baruchstreks templates trips static deployment_package/
+          cp manage.py requirements.txt .deployment deployment_package/
+          
+          # Create runtime.txt to specify Python version
+          echo "python-3.11" > deployment_package/runtime.txt
+          
+          # Create a simple wsgi.py file to ensure proper startup
+          echo "from baruchstreks.wsgi import application" > deployment_package/wsgi.py
+          
+          # Create zip package
+          cd deployment_package
           zip -r ../deployment.zip .
           cd ..
       
-      # Deploy to Azure Web App
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ./deployment.zip
-          type: zip
+      # Deploy using Azure CLI
+      - name: Deploy to Azure Web App using CLI
+        run: |
+          az webapp deployment source config-zip --resource-group BaruchsTreks --name baruchstreks --src deployment.zip
