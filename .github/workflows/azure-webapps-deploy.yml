@@ -115,6 +115,27 @@ jobs:
             DISABLE_COLLECTSTATIC="1" \
             SCM_DO_BUILD_DURING_DEPLOYMENT="true"
       
+      # Create startup command file
+      - name: Create startup command file
+        run: |
+          echo "#!/bin/bash" > startup.sh
+          echo "cd /home/site/wwwroot" >> startup.sh
+          echo "pip install -r requirements.txt" >> startup.sh
+          echo "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000" >> startup.sh
+          chmod +x startup.sh
+          cat startup.sh
+      
+      # Upload startup script to the web app
+      - name: Upload startup script
+        run: |
+          az webapp deploy --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --src-path startup.sh --target-path /home/site/wwwroot/startup.sh --type file
+      
+      # Set startup command after deployment
+      - name: Set startup command
+        run: |
+          # Set startup command to use our startup script
+          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "/home/site/wwwroot/startup.sh"
+      
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -123,9 +144,3 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
           package: release.zip
-      
-      # Set startup command after deployment
-      - name: Set startup command
-        run: |
-          # Set startup command to use gunicorn directly
-          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
