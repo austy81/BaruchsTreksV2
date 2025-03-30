@@ -35,16 +35,32 @@ This project is configured for continuous deployment to Azure Web App using GitH
    - Run the following command to create a service principal with Contributor role:
      ```bash
      az ad sp create-for-rbac --name "baruchstreks-github" --role contributor \
-       --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Web/sites/baruchstreks \
-       --sdk-auth
+       --scopes /subscriptions/b355f86c-94b4-467b-b643-1206cbf0e24c/resourceGroups/BaruchsTreks/providers/Microsoft.Web/sites/baruchstreks
      ```
    - Replace `{subscription-id}` with your Azure subscription ID and `{resource-group}` with your resource group name
-   - Copy the entire JSON output
+   - The command will output JSON similar to this:
+     ```json
+     {
+       "appId": "example-app-id",
+       "displayName": "baruchstreks-github",
+       "password": "example-password",
+       "tenant": "example-tenant-id"
+     }
+     ```
+   - You need to transform this output into the format required by the GitHub Actions Azure login:
+     ```json
+     {
+       "clientId": "THE-APP-ID-FROM-ABOVE",
+       "clientSecret": "THE-PASSWORD-FROM-ABOVE",
+       "tenantId": "THE-TENANT-FROM-ABOVE",
+       "subscriptionId": "YOUR-AZURE-SUBSCRIPTION-ID"
+     }
+     ```
 
 3. **Configure GitHub Secrets**:
    - In your GitHub repository, go to Settings > Secrets and Variables > Actions
    - Add the following secrets:
-     - `AZURE_CREDENTIALS`: The entire JSON output from the service principal creation
+     - `AZURE_CREDENTIALS`: The properly formatted JSON from step 2
      - `BARUCHSTREKS_STORAGE_CONNECTION`: Your Azure Storage connection string
      - `MAPY_CZ_API_KEY`: Your Mapy.cz API key
      - `SECRET_KEY`: A secure Django secret key
