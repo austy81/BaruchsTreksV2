@@ -43,6 +43,13 @@ jobs:
           BARUCHSTREKS_STORAGE_CONNECTION: ${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
 
+      # Configure App Service for Python
+      - name: Configure App Service
+        run: |
+          az webapp config set --resource-group BaruchsTreks --name ${{ env.AZURE_WEBAPP_NAME }} --linux-fx-version "PYTHON|3.11"
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
