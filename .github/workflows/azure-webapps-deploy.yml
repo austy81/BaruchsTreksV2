@@ -113,7 +113,7 @@ jobs:
             ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
             DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
             DISABLE_COLLECTSTATIC="true" \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="true"
+            SCM_DO_BUILD_DURING_DEPLOYMENT="1"
 
       
       # Deploy to Azure Web App
