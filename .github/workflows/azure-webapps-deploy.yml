@@ -18,7 +18,7 @@ jobs:
     steps:
       # Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up Python
       - name: Set up Python
@@ -40,17 +40,15 @@ jobs:
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
       
       # Create deployment package
-      - name: Create deployment package
-        run: |
-          zip -r deployment.zip . -x "*.git*" "deployment.zip"
+      - name: Prepare artifact for deployment
+        run: zip -r release.zip . -x "*.git*" "release.zip"
       
       # Upload artifact for deployment job
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: deployment.zip
-          retention-days: 1
+          path: release.zip
 
   deploy:
     name: Deploy to Azure
@@ -59,13 +57,19 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
     
     steps:
       # Download artifact from build job
-      - name: Download artifact
-        uses: actions/download-artifact@v2
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
         with:
           name: python-app
+      
+      # Unzip artifact for deployment
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
       
       # Log in to Azure
       - name: Log in to Azure
@@ -95,5 +99,7 @@ jobs:
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        run: |
-          az webapp deploy --resource-group BaruchsTreks --name baruchstreks --src-path deployment.zip --type zip
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: 'Production'
