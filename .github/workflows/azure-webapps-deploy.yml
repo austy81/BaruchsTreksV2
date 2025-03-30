@@ -36,11 +36,38 @@ jobs:
         env:
           BARUCHSTREKS_STORAGE_CONNECTION: ${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
-
+      
+      # Login to Azure
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      # Configure Azure Web App
+      - name: Configure Azure Web App
+        run: |
+          # Set Python version
+          az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.11"
+          
+          # Configure environment variables
+          az webapp config appsettings set --resource-group BaruchsTreks --name baruchstreks --settings \
+            BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
+            MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
+            SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            DEBUG="False" \
+            ALLOWED_HOSTS="baruchstreks.azurewebsites.net" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
+            WEBSITE_WEBDEPLOY_USE_SCM="false"
+          
+          # Set startup command
+          az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
+      
+      # Create deployment package
+      - name: Create deployment package
+        run: |
+          zip -r deployment.zip . -x "*.git*" "deployment.zip"
+      
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: production
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        run: |
+          az webapp deploy --resource-group BaruchsTreks --name baruchstreks --src-path deployment.zip --type zip
