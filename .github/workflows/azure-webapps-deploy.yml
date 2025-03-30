@@ -41,7 +41,7 @@ jobs:
           BARUCHSTREKS_STORAGE_CONNECTION: ${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
       
-      # Make startup script executable
+      # Make startup script executable (this won't persist in the zip deployment)
       - name: Make startup script executable
         run: |
           chmod +x startup.sh
@@ -119,8 +119,8 @@ jobs:
             SCM_DO_BUILD_DURING_DEPLOYMENT="0" \
             WEBSITE_RUN_FROM_PACKAGE="1"
           
-          # Set startup command to use our startup script
-          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "startup.sh"
+          # Set startup command directly instead of using a script file
+          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "pip install -r requirements.txt && python manage.py collectstatic --noinput && gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
       
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
