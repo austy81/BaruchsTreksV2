@@ -56,16 +56,30 @@ jobs:
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             DEBUG="False" \
             ALLOWED_HOSTS="baruchstreks.azurewebsites.net" \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
             WEBSITE_WEBDEPLOY_USE_SCM="false"
           
       # Set startup command
       - name: Set startup command
         run: |
           az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
-          
+      
+      # Create deployment package
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment
+          cp -r . deployment/
+          cd deployment
+          pip install -r requirements.txt --target=site-packages
+          cp -r site-packages/* .
+          rm -rf site-packages
+          zip -r ../deployment.zip .
+          cd ..
+      
+      # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: .
+          package: ./deployment.zip
+          type: zip
