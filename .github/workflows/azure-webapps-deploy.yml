@@ -96,6 +96,11 @@ jobs:
           # Set startup command
           az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
 
+      - name: Install Python dependencies on target machine
+        run: |
+          pip install -r requirements.txt
+          python manage.py migrate
+      
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
