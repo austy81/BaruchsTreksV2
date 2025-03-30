@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if is_new %}
+Create New Trip - Baruch's Treks
+{% else %}
+Edit {{ trip.title }} - Baruch's Treks
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .section-title {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    #map {
+        height: 400px;
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .map-instructions {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border-left: 4px solid #0d6efd;
+    }
+    .location-display {
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+    }
+    .marker-btn {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+<!-- Add Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            {% if is_new %}
+            <h1>Create New Trip</h1>
+            <a href="{% url 'trips:index' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Trips
+            </a>
+            {% else %}
+            <h1>Edit Trip: {{ trip.title }}</h1>
+            <a href="{% url 'trips:trip_detail' trip_id=trip.row_key %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Trip
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                {% if is_new %}
+                Trip Information
+                {% else %}
+                Edit Trip Information
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Title*</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.trip_completed_on.id_for_label }}" class="form-label">Completion Date</label>
+                            {{ form.trip_completed_on }}
+                            {% if form.trip_completed_on.errors %}
+                            <div class="text-danger">{{ form.trip_completed_on.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <h5 class="section-title">Trip Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.length_hours.id_for_label }}" class="form-label">Length (hours)</label>
+                            {{ form.length_hours }}
+                            {% if form.length_hours.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.length_hours.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.participants.id_for_label }}" class="form-label">Participants</label>
+                            {{ form.participants }}
+                            {% if form.participants.errors %}
+                            <div class="text-danger">{{ form.participants.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.meters_ascend.id_for_label }}" class="form-label">Elevation Gain (m)</label>
+                            {{ form.meters_ascend }}
+                            {% if form.meters_ascend.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.meters_ascend.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.meters_descend.id_for_label }}" class="form-label">Meters Descend</label>
+                            {{ form.meters_descend }}
+                            {% if form.meters_descend.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.meters_descend.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="section-title">Climbing/Hiking Grades</h5>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.trip_class.id_for_label }}" class="form-label">Trip Class</label>
+                            {{ form.trip_class }}
+                            {% if form.trip_class.errors %}
+                            <div class="text-danger">{{ form.trip_class.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.uiaa_grade.id_for_label }}" class="form-label">UIAA Grade</label>
+                            {{ form.uiaa_grade }}
+                            {% if form.uiaa_grade.errors %}
+                            <div class="text-danger">{{ form.uiaa_grade.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.alpine_grade.id_for_label }}" class="form-label">Alpine Grade</label>
+                            {{ form.alpine_grade }}
+                            {% if form.alpine_grade.errors %}
+                            <div class="text-danger">{{ form.alpine_grade.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.ferata_grade.id_for_label }}" class="form-label">Ferrata Grade</label>
+                            {{ form.ferata_grade }}
+                            {% if form.ferata_grade.errors %}
+                            <div class="text-danger">{{ form.ferata_grade.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="section-title">Map Locations</h5>
+                
+                <div class="map-instructions">
+                    <p><strong>Instructions:</strong> Click the buttons below to select which marker to place, then click on the map to set the location.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <button type="button" id="parkingBtn" class="btn btn-outline-primary marker-btn">
+                        <i class="fas fa-map-marker-alt"></i> Start Point
+                    </button>
+                    <button type="button" id="highPointBtn" class="btn btn-outline-success marker-btn">
+                        <i class="fas fa-mountain"></i> Finish Point
+                    </button>
+                    <button type="button" id="clearMarkersBtn" class="btn btn-outline-danger marker-btn">
+                        <i class="bi bi-trash"></i> Clear Markers
+                    </button>
+                </div>
+                
+                <div id="map"></div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Start Point</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="parkingCoords" class="location-display">
+                                    {% if form.parking_json.value %}
+                                    Lat: <span id="parkingLat"></span>, Lng: <span id="parkingLng"></span>
+                                    {% else %}
+                                    No start point location set
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Finish Point</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="highPointCoords" class="location-display">
+                                    {% if form.high_point_json.value %}
+                                    Lat: <span id="highPointLat"></span>, Lng: <span id="highPointLng"></span>
+                                    {% else %}
+                                    No finish point location set
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hidden fields for coordinates -->
+                {{ form.parking_json }}
+                {{ form.high_point_json }}
+                
+                <h5 class="section-title">Photos</h5>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="{{ form.photos.id_for_label }}" class="form-label">Upload Photos</label>
+                            <input type="file" name="photos" multiple class="form-control" id="{{ form.photos.id_for_label }}" accept="image/*">
+                            <small class="form-text text-muted">
+                                Select multiple photos to upload. Supported formats: JPG, PNG, GIF, etc.
+                            </small>
+                            {% if form.photos.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.photos.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if trip_photos %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Existing Photos</h6>
+                        <div class="row">
+                            {% for photo_url in trip_photos %}
+                            <div class="col-md-3 mb-3">
+                                <div class="card">
+                                    <img src="{{ photo_url }}" class="card-img-top" alt="Trip photo">
+                                    <div class="card-body p-2 text-center">
+                                        <a href="{{ photo_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_new %}
+                        Create Trip
+                        {% else %}
+                        Save Changes
+                        {% endif %}
+                    </button>
+                    {% if is_new %}
+                    <a href="{% url 'trips:index' %}" class="btn btn-outline-secondary">Cancel</a>
+                    {% else %}
+                    <a href="{% url 'trips:trip_detail' trip_id=trip.row_key %}" class="btn btn-outline-secondary">Cancel</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // API key from settings
+        const API_KEY = '{{ mapy_cz_api_key }}';
+        
+        // Default center coordinates (Czech Republic)
+        let centerLat = 49.74;
+        let centerLng = 15.33;
+        let defaultZoom = 10;
+        
+        // Initialize the map
+        const map = L.map('map').setView([centerLat, centerLng], defaultZoom);
+        
+        // Add the tile layer
+        L.tileLayer(`https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+            minZoom: 0,
+            maxZoom: 19,
+            attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+        }).addTo(map);
+        
+        // Add the mapy.cz logo
+        const LogoControl = L.Control.extend({
+            options: {
+                position: 'bottomleft',
+            },
+            
+            onAdd: function (map) {
+                const container = L.DomUtil.create('div');
+                const link = L.DomUtil.create('a', '', container);
+                
+                link.setAttribute('href', 'http://mapy.cz/');
+                link.setAttribute('target', '_blank');
+                link.innerHTML = '<img src="https://api.mapy.cz/img/api/logo.svg" />';
+                L.DomEvent.disableClickPropagation(link);
+                
+                return container;
+            },
+        });
+        
+        map.addControl(new LogoControl());
+        
+        // Variables to store markers and current mode
+        let parkingMarker = null;
+        let highPointMarker = null;
+        let currentMode = null;
+        
+        // Get the hidden input fields
+        const parkingJsonInput = document.getElementById('{{ form.parking_json.id_for_label }}');
+        const highPointJsonInput = document.getElementById('{{ form.high_point_json.id_for_label }}');
+        
+        // Get the display elements
+        const parkingLatSpan = document.getElementById('parkingLat');
+        const parkingLngSpan = document.getElementById('parkingLng');
+        const highPointLatSpan = document.getElementById('highPointLat');
+        const highPointLngSpan = document.getElementById('highPointLng');
+        const parkingCoordsDiv = document.getElementById('parkingCoords');
+        const highPointCoordsDiv = document.getElementById('highPointCoords');
+        
+        // Initialize markers from existing data
+        try {
+            if (parkingJsonInput.value) {
+                const parkingData = JSON.parse(parkingJsonInput.value);
+                if (parkingData.Longtitude && parkingData.Latitude) {
+                    const lat = parkingData.Latitude;
+                    const lng = parkingData.Longtitude;
+                    
+                    parkingMarker = L.marker([lat, lng], {
+                        title: 'Start Point',
+                        draggable: true,
+                        icon: L.icon({
+                            iconUrl: '{% static "img/marker-parking.svg" %}',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16],
+                            popupAnchor: [0, -16]
+                        })
+                    }).addTo(map);
+                    
+                    parkingMarker.on('dragend', function(event) {
+                        updateParkingCoordinates(event.target.getLatLng());
+                    });
+                    
+                    // Update display
+                    parkingLatSpan.textContent = lat.toFixed(6);
+                    parkingLngSpan.textContent = lng.toFixed(6);
+                    parkingCoordsDiv.innerHTML = `Lat: <span id="parkingLat">${lat.toFixed(6)}</span>, Lng: <span id="parkingLng">${lng.toFixed(6)}</span>`;
+                }
+            }
+            
+            if (highPointJsonInput.value) {
+                const highPointData = JSON.parse(highPointJsonInput.value);
+                if (highPointData.Longtitude && highPointData.Latitude) {
+                    const lat = highPointData.Latitude;
+                    const lng = highPointData.Longtitude;
+                    
+                    highPointMarker = L.marker([lat, lng], {
+                        title: 'Finish Point',
+                        draggable: true,
+                        icon: L.icon({
+                            iconUrl: '{% static "img/marker-summit.svg" %}',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16],
+                            popupAnchor: [0, -16]
+                        })
+                    }).addTo(map);
+                    
+                    highPointMarker.on('dragend', function(event) {
+                        updateHighPointCoordinates(event.target.getLatLng());
+                    });
+                    
+                    // Update display
+                    highPointLatSpan.textContent = lat.toFixed(6);
+                    highPointLngSpan.textContent = lng.toFixed(6);
+                    highPointCoordsDiv.innerHTML = `Lat: <span id="highPointLat">${lat.toFixed(6)}</span>, Lng: <span id="highPointLng">${lng.toFixed(6)}</span>`;
+                }
+            }
+            
+            // If both markers exist, fit the map to show both
+            if (parkingMarker && highPointMarker) {
+                const group = new L.featureGroup([parkingMarker, highPointMarker]);
+                map.fitBounds(group.getBounds().pad(0.1));
+                
+                // Draw a line between the two points
+                const routeLine = L.polyline([
+                    parkingMarker.getLatLng(),
+                    highPointMarker.getLatLng()
+                ], {
+                    color: 'red',
+                    weight: 3
+                }).addTo(map);
+            } else if (parkingMarker) {
+                map.setView(parkingMarker.getLatLng(), 14);
+            } else if (highPointMarker) {
+                map.setView(highPointMarker.getLatLng(), 14);
+            }
+        } catch (e) {
+            console.error('Error initializing markers:', e);
+        }
+        
+        // Function to update parking coordinates
+        function updateParkingCoordinates(latLng) {
+            const lat = latLng.lat;
+            const lng = latLng.lng;
+            
+            // Update the hidden input
+            const parkingJson = JSON.stringify({
+                Longtitude: lng,
+                Latitude: lat
+            });
+            parkingJsonInput.value = parkingJson;
+            
+            // Update the display
+            parkingCoordsDiv.innerHTML = `Lat: <span id="parkingLat">${lat.toFixed(6)}</span>, Lng: <span id="parkingLng">${lng.toFixed(6)}</span>`;
+        }
+        
+        // Function to update high point coordinates
+        function updateHighPointCoordinates(latLng) {
+            const lat = latLng.lat;
+            const lng = latLng.lng;
+            
+            // Update the hidden input
+            const highPointJson = JSON.stringify({
+                Longtitude: lng,
+                Latitude: lat
+            });
+            highPointJsonInput.value = highPointJson;
+            
+            // Update the display
+            highPointCoordsDiv.innerHTML = `Lat: <span id="highPointLat">${lat.toFixed(6)}</span>, Lng: <span id="highPointLng">${lng.toFixed(6)}</span>`;
+        }
+        
+        // Button click handlers
+        document.getElementById('parkingBtn').addEventListener('click', function() {
+            currentMode = 'parking';
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary');
+            document.getElementById('highPointBtn').classList.remove('btn-success');
+            document.getElementById('highPointBtn').classList.add('btn-outline-success');
+        });
+        
+        document.getElementById('highPointBtn').addEventListener('click', function() {
+            currentMode = 'highPoint';
+            this.classList.remove('btn-outline-success');
+            this.classList.add('btn-success');
+            document.getElementById('parkingBtn').classList.remove('btn-primary');
+            document.getElementById('parkingBtn').classList.add('btn-outline-primary');
+        });
+        
+        document.getElementById('clearMarkersBtn').addEventListener('click', function() {
+            // Clear parking marker
+            if (parkingMarker) {
+                map.removeLayer(parkingMarker);
+                parkingMarker = null;
+                parkingJsonInput.value = '';
+                parkingCoordsDiv.innerHTML = 'No start point location set';
+            }
+            
+            // Clear high point marker
+            if (highPointMarker) {
+                map.removeLayer(highPointMarker);
+                highPointMarker = null;
+                highPointJsonInput.value = '';
+                highPointCoordsDiv.innerHTML = 'No finish point location set';
+            }
+            
+            // Reset mode
+            currentMode = null;
+            document.getElementById('parkingBtn').classList.remove('btn-primary');
+            document.getElementById('parkingBtn').classList.add('btn-outline-primary');
+            document.getElementById('highPointBtn').classList.remove('btn-success');
+            document.getElementById('highPointBtn').classList.add('btn-outline-success');
+        });
+        
+        // Map click handler
+        map.on('click', function(e) {
+            if (currentMode === 'parking') {
+                // Remove existing marker if any
+                if (parkingMarker) {
+                    map.removeLayer(parkingMarker);
+                }
+                
+                // Create new marker
+                parkingMarker = L.marker(e.latlng, {
+                    title: 'Start Point',
+                    draggable: true,
+                    icon: L.icon({
+                        iconUrl: '{% static "img/marker-parking.svg" %}',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    })
+                }).addTo(map);
+                
+                // Add drag event handler
+                parkingMarker.on('dragend', function(event) {
+                    updateParkingCoordinates(event.target.getLatLng());
+                });
+                
+                // Update coordinates
+                updateParkingCoordinates(e.latlng);
+                
+            } else if (currentMode === 'highPoint') {
+                // Remove existing marker if any
+                if (highPointMarker) {
+                    map.removeLayer(highPointMarker);
+                }
+                
+                // Create new marker
+                highPointMarker = L.marker(e.latlng, {
+                    title: 'Finish Point',
+                    draggable: true,
+                    icon: L.icon({
+                        iconUrl: '{% static "img/marker-summit.svg" %}',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    })
+                }).addTo(map);
+                
+                // Add drag event handler
+                highPointMarker.on('dragend', function(event) {
+                    updateHighPointCoordinates(event.target.getLatLng());
+                });
+                
+                // Update coordinates
+                updateHighPointCoordinates(e.latlng);
+            }
+            
+            // If both markers exist, draw a line between them
+            if (parkingMarker && highPointMarker) {
+                // Remove existing lines
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                // Draw new line
+                const routeLine = L.polyline([
+                    parkingMarker.getLatLng(),
+                    highPointMarker.getLatLng()
+                ], {
+                    color: 'red',
+                    weight: 3
+                }).addTo(map);
+            }
+        });
+    });
+</script>
+{% endblock %}

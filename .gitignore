@@ -136,6 +136,20 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment files with secrets
+.env.local
+.env.development
+.env.production
+*.env
+
+# VS Code settings with secrets
+launch.json
+settings.json
+
+# Custom environment scripts with secrets
+run_with_env.ps1
+*_with_env.*
+
 # Spyder project settings
 .spyderproject
 .spyproject

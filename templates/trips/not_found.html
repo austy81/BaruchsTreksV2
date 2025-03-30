@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Trip Not Found - Baruch's Treks{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">Trip Not Found</h1>
+    <p class="lead">Sorry, the trip you're looking for doesn't exist or has been removed.</p>
+    <div class="mt-4">
+        <a href="{% url 'trips:all_trips' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Back to All Trips
+        </a>
+    </div>
+</div>
+{% endblock %}

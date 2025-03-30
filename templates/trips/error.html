@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Error - Baruch's Treks{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-danger mt-4">
+        <h4 class="alert-heading">Error Occurred</h4>
+        <p>{{ error }}</p>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Technical Details</h5>
+        </div>
+        <div class="card-body">
+            <pre class="bg-light p-3"><code>{{ traceback }}</code></pre>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'trips:index' %}" class="btn btn-primary">
+            <i class="bi bi-house"></i> Return to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

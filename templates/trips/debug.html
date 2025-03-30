@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Debug Information{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Azure Connection Debug Information</h2>
+        </div>
+        <div class="card-body">
+            <h4>Environment Variables</h4>
+            <ul class="list-group mb-4">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    BARUCHSTREKS_STORAGE_CONNECTION exists
+                    <span class="badge {% if debug_info.env_conn_exists %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                        {{ debug_info.env_conn_exists|yesno:"Yes,No" }}
+                    </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    MAPY_CZ_API_KEY exists
+                    <span class="badge {% if debug_info.env_mapy_exists %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                        {{ debug_info.env_mapy_exists|yesno:"Yes,No" }}
+                    </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Connection string loaded in AzureTableService
+                    <span class="badge {% if debug_info.connection_string_in_service %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                        {{ debug_info.connection_string_in_service|yesno:"Yes,No" }}
+                    </span>
+                </li>
+            </ul>
+
+            <h4>Trip Data</h4>
+            <ul class="list-group mb-4">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Number of trips retrieved
+                    <span class="badge bg-primary rounded-pill">{{ debug_info.trips_count }}</span>
+                </li>
+            </ul>
+
+            {% if debug_info.error_message %}
+            <div class="alert alert-danger">
+                <h4>Error Message</h4>
+                <pre>{{ debug_info.error_message }}</pre>
+            </div>
+            {% endif %}
+
+            {% if debug_info.trips %}
+            <h4>Sample Trips (first 3)</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Row Key</th>
+                            <th>Title</th>
+                            <th>Completed On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trip in debug_info.trips %}
+                        <tr>
+                            <td>{{ trip.row_key }}</td>
+                            <td>{{ trip.title }}</td>
+                            <td>{{ trip.trip_completed_on }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'trips:index' %}" class="btn btn-primary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

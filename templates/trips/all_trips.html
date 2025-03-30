@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}All Trips - Baruch's Treks{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">All Trips</h1>
+
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-end">
+        <a href="{% url 'trips:trip_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Create New Trip
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="card-text mb-0">Browse through our collection of hiking and mountaineering adventures.</p>
+                    
+                    <div class="btn-group" role="group" aria-label="Trip filter">
+                        <a href="{% url 'trips:all_trips' %}?filter=all" class="btn btn-outline-primary {% if current_filter == 'all' %}active{% endif %}">
+                            All Trips <span class="badge bg-secondary">{{ total_count }}</span>
+                        </a>
+                        <a href="{% url 'trips:all_trips' %}?filter=completed" class="btn btn-outline-success {% if current_filter == 'completed' %}active{% endif %}">
+                            Completed <span class="badge bg-secondary">{{ completed_count }}</span>
+                        </a>
+                        <a href="{% url 'trips:all_trips' %}?filter=future" class="btn btn-outline-info {% if current_filter == 'future' %}active{% endif %}">
+                            Future Trips <span class="badge bg-secondary">{{ future_count }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cols-1 g-4">
+    {% for trip in trips %}
+    <div class="col">
+        <div class="card shadow-sm {% if not trip.trip_completed_on %}border-info{% endif %}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="card-title">{{ trip.title }}</h5>
+                        <p class="card-text text-muted">
+                            {% if trip.trip_completed_on %}
+                            <small>Completed: {{ trip.trip_completed_on }}</small>
+                            {% else %}
+                            <small class="text-info"><i class="bi bi-calendar-event"></i> Future Trip</small>
+                            {% endif %}
+                        </p>
+                        <p class="card-text">{{ trip.description|truncatewords:50 }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex flex-column h-100">
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        {% if trip.row_key %}
+                                        <a href="{% url 'trips:trip_detail' trip.row_key %}" class="btn btn-sm btn-primary">View Details</a>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled>No Details</button>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted">
+                                        <span class="badge bg-secondary">{{ trip.length_hours }} hours</span>
+                                        {% if trip.meters_ascend %}
+                                        <span class="badge bg-info text-dark">↑ {{ trip.meters_ascend }}m</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            {% if current_filter == 'completed' %}
+            No completed trips available. Check back later!
+            {% elif current_filter == 'future' %}
+            No future trips planned yet. Check back later!
+            {% else %}
+            No trips available at the moment. Check back later!
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
