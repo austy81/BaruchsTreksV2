@@ -119,6 +119,11 @@ jobs:
       - name: Wait for configuration to apply
         run: sleep 10
 
+      - name: Install Python dependencies on target machine
+        run: |
+          pip install -r requirements.txt
+          python src/manage.py migrate
+
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
