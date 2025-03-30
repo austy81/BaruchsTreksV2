@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: baruchstreks    # Your Azure Web App name
+  AZURE_WEBAPP_NAME: b-treks    # Your Azure Web App name
   PYTHON_VERSION: '3.12'             # Python version
 
 jobs:
@@ -77,24 +77,35 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # Create Azure Web App if it doesn't exist
+      - name: Create Azure Web App if it doesn't exist
+        run: |
+          # Check if the web app exists
+          if ! az webapp show --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group BaruchsTreks &>/dev/null; then
+            echo "Creating new web app: ${{ env.AZURE_WEBAPP_NAME }}"
+            az webapp create --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group BaruchsTreks --plan baruchstreks-plan --runtime "PYTHON:3.12"
+          else
+            echo "Web app ${{ env.AZURE_WEBAPP_NAME }} already exists"
+          fi
+
       # Configure Azure Web App
       - name: Configure Azure Web App
         run: |
           # Set Python version
-          az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.12"
+          az webapp config set --resource-group BaruchsTreks --name ${{ env.AZURE_WEBAPP_NAME }} --linux-fx-version "PYTHON|3.12"
           
           # Configure environment variables
-          az webapp config appsettings set --resource-group BaruchsTreks --name baruchstreks --settings \
+          az webapp config appsettings set --resource-group BaruchsTreks --name ${{ env.AZURE_WEBAPP_NAME }} --settings \
             BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
             MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
             SECRET_KEY="${{ secrets.SECRET_KEY }}" \
             DEBUG="False" \
-            ALLOWED_HOSTS="baruchstreks.azurewebsites.net" \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="1" \
-            WEBSITE_RUN_FROM_PACKAGE="0"
+            ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="0" \
+            WEBSITE_RUN_FROM_PACKAGE="1"
           
           # Set startup command
-          az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
+          az webapp config set --resource-group BaruchsTreks --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
       
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
