@@ -115,7 +115,10 @@ jobs:
             DISABLE_COLLECTSTATIC="true" \
             SCM_DO_BUILD_DURING_DEPLOYMENT="1"
 
-      
+      # Add a delay to avoid conflicts
+      - name: Wait for configuration to apply
+        run: sleep 10
+
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
