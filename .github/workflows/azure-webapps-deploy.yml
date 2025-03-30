@@ -128,7 +128,7 @@ jobs:
       # Upload startup script to the web app
       - name: Upload startup script
         run: |
-          az webapp deploy --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --src-path startup.sh --target-path /home/site/wwwroot/startup.sh --type file
+          az webapp deploy --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --src-path startup.sh --target-path /home/site/wwwroot/startup.sh --type startup
       
       # Set startup command after deployment
       - name: Set startup command
