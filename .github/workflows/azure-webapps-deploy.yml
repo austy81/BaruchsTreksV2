@@ -43,7 +43,11 @@ jobs:
       
       # Create deployment package
       - name: Prepare artifact for deployment
-        run: zip -r release.zip . -x "*.git*" "release.zip"
+        run: |
+          # List files to verify
+          ls -la
+          # Create the zip file
+          zip -r release.zip ./* -x "*.git*"
       
       # Upload artifact for deployment job
       - name: Upload artifact for deployment jobs
@@ -68,10 +72,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-app
-      
-      # Unzip artifact for deployment
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
       
       # Log in to Azure
       - name: Log in to Azure
@@ -112,7 +112,8 @@ jobs:
             DEBUG="False" \
             ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
             DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
-            DISABLE_COLLECTSTATIC="1"
+            DISABLE_COLLECTSTATIC="1" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="true"
       
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
@@ -121,7 +122,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          package: .
+          package: release.zip
       
       # Set startup command after deployment
       - name: Set startup command
