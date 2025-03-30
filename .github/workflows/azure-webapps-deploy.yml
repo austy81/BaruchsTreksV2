@@ -81,7 +81,7 @@ jobs:
       - name: Configure Azure Web App
         run: |
           # Set Python version
-          az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.11"
+          az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.12"
           
           # Configure environment variables
           az webapp config appsettings set --resource-group BaruchsTreks --name baruchstreks --settings \
