@@ -45,12 +45,24 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      # Configure Azure Web App
+      - name: Configure Azure Web App
+        run: |
+          az webapp config set --resource-group BaruchsTreks --name baruchstreks --linux-fx-version "PYTHON|3.11"
+          az webapp config appsettings set --resource-group BaruchsTreks --name baruchstreks --settings \
+            BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
+            MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
+            SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            DEBUG="False" \
+            ALLOWED_HOSTS="baruchstreks.azurewebsites.net" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+            WEBSITE_WEBDEPLOY_USE_SCM="false"
           
-      - name: Building web app
-        uses: azure/appservice-build@v3
-        with:
-          platform: python
-          platform-version: ${{ env.PYTHON_VERSION }}
+      # Set startup command
+      - name: Set startup command
+        run: |
+          az webapp config set --resource-group BaruchsTreks --name baruchstreks --startup-file "gunicorn baruchstreks.wsgi:application --bind=0.0.0.0:8000"
           
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
