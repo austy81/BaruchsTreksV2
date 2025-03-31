@@ -98,31 +98,32 @@ jobs:
             echo "Web app ${{ env.AZURE_WEBAPP_NAME }} already exists"
           fi
 
-      # Configure Azure Web App
-      - name: Configure Azure Web App
-        run: |
-          # Set Python version
-          az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --linux-fx-version "PYTHON|3.12"
+      # # Configure Azure Web App
+      # - name: Configure Azure Web App
+      #   run: |
+      #     # Set Python version
+      #     az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --linux-fx-version "PYTHON|3.12"
           
-          # Configure environment variables
-          az webapp config appsettings set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --settings \
-            BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
-            MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
-            SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-            DEBUG="False" \
-            ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
-            DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
-            DISABLE_COLLECTSTATIC="true" \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="1"
+      #     # Configure environment variables
+      #     az webapp config appsettings set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --settings \
+      #       BARUCHSTREKS_STORAGE_CONNECTION="${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}" \
+      #       MAPY_CZ_API_KEY="${{ secrets.MAPY_CZ_API_KEY }}" \
+      #       SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+      #       DEBUG="False" \
+      #       ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
+      #       DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
+      #       DISABLE_COLLECTSTATIC="true" \
+      #       SCM_DO_BUILD_DURING_DEPLOYMENT="1"
 
-      # Add a delay to avoid conflicts
-      - name: Wait for configuration to apply
-        run: sleep 10
+      # # Add a delay to avoid conflicts
+      # - name: Wait for configuration to apply
+      #   run: sleep 10
 
       - name: Install Python dependencies on target machine
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          python manage.py migrate
+          python3 manage.py migrate
 
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
