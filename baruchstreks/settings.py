@@ -30,8 +30,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-6!rg2!$0(2x6vf7hwsn&b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,baruchstreks.azurewebsites.net').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,b-treks.azurewebsites.net').split(',')
 
+CSRF_TRUSTED_ORIGINS = ['https://b-treks.azurewebsites.net']
 
 # Application definition
 

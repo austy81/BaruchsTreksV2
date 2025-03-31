@@ -72,7 +72,7 @@ This project is configured for continuous deployment to Azure Web App using GitH
      - `MAPY_CZ_API_KEY`: Your Mapy.cz API key
      - `DEBUG`: Set to "False"
      - `SECRET_KEY`: A secure Django secret key
-     - `ALLOWED_HOSTS`: "baruchstreks.azurewebsites.net"
+     - `ALLOWED_HOSTS`: "b-treks.azurewebsites.net"
 
 5. **Push to Main Branch**:
    - When you push to the main branch, the GitHub Actions workflow will automatically:

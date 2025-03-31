@@ -31,7 +31,7 @@ jobs:
       # Install dependencies in venv
       - name: Install dependencies in venv
         run: |
-          pwd
+          # pwd
           python -m pip install --upgrade pip
           python -m venv venv
           source ./venv/bin/activate
@@ -41,7 +41,7 @@ jobs:
       # Collect static files
       - name: Collect static files
         run: |
-          pwd
+          # pwd
           source ./venv/bin/activate
           python manage.py collectstatic --noinput
         env:
@@ -52,7 +52,7 @@ jobs:
       - name: Prepare artifact for deployment
         run: |
           # List files to verify
-          ls -la
+          # ls -la
           # Create the zip file
           zip -r release.zip ./* -x "*.git*"
       
@@ -110,6 +110,7 @@ jobs:
       #   run: |
       #     # Set Python version
       #     az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --linux-fx-version "PYTHON|3.12"
+      #     az webapp config set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --startup-file "python manage.py runserver 0.0.0.0:8000"
           
       #     # Configure environment variables
       #     az webapp config appsettings set --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME }} --settings \
@@ -120,7 +121,8 @@ jobs:
       #       ALLOWED_HOSTS="${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net" \
       #       DJANGO_SETTINGS_MODULE="baruchstreks.settings" \
       #       DISABLE_COLLECTSTATIC="true" \
-      #       SCM_DO_BUILD_DURING_DEPLOYMENT="1"
+      #       SCM_DO_BUILD_DURING_DEPLOYMENT="1" \
+      #       CSRF_TRUSTED_ORIGINS="https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
 
       # # Add a delay to avoid conflicts
       # - name: Wait for configuration to apply
