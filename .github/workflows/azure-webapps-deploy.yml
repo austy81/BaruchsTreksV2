@@ -31,15 +31,19 @@ jobs:
       # Install dependencies in venv
       - name: Install dependencies in venv
         run: |
+          pwd
           python -m pip install --upgrade pip
           python -m venv venv
-          source venv/bin/activate
+          source ./venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
         
       # Collect static files
       - name: Collect static files
-        run: python manage.py collectstatic --noinput
+        run: |
+          pwd
+          source ./venv/bin/activate
+          python manage.py collectstatic --noinput
         env:
           BARUCHSTREKS_STORAGE_CONNECTION: ${{ secrets.BARUCHSTREKS_STORAGE_CONNECTION }}
           MAPY_CZ_API_KEY: ${{ secrets.MAPY_CZ_API_KEY }}
