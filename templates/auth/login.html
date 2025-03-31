@@ -12,7 +12,14 @@
             <div class="card-body">
                 {% if form.errors %}
                 <div class="alert alert-danger">
-                    Your username and password didn't match. Please try again.
+                    <p>Your username and password didn't match. Please try again.</p>
+                    {% if form.non_field_errors %}
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 </div>
                 {% endif %}
 
@@ -34,10 +41,24 @@
                     <div class="mb-3">
                         <label for="id_username" class="form-label">Username</label>
                         <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                        {% if form.username.errors %}
+                        <div class="text-danger">
+                            {% for error in form.username.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label for="id_password" class="form-label">Password</label>
                         <input type="password" name="password" id="id_password" class="form-control" required>
+                        {% if form.password.errors %}
+                        <div class="text-danger">
+                            {% for error in form.password.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">Login</button>

@@ -19,9 +19,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/trips/' %}active{% endif %}" href="{% url 'trips:index' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {% if request.path == '/trips/all/' %}active{% endif %}" href="{% url 'trips:all_trips' %}">All Trips</a>
                     </li>
                     {% if user.is_authenticated and user.is_staff %}

@@ -20,6 +20,7 @@ from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.views.defaults import server_error
+from trips.auth_views import custom_login
 
 # Custom error handler view
 def custom_server_error(request, *args, **kwargs):
@@ -50,7 +51,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/trips/', permanent=False)),
     
     # Authentication URLs
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login'),
+    path('accounts/login/', custom_login, name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(template_name='auth/logged_out.html'), name='logout'),
 ]
 
