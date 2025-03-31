@@ -200,3 +200,8 @@ LOGGING = {
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/trips/'
 LOGOUT_REDIRECT_URL = '/trips/'
+
+# Session settings - make sessions more secure
+SESSION_COOKIE_SECURE = not DEBUG  # Use secure cookies in production
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session expires when browser closes

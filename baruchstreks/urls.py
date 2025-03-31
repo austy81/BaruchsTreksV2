@@ -18,6 +18,31 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.views.defaults import server_error
+
+# Custom error handler view
+def custom_server_error(request, *args, **kwargs):
+    """Custom 500 error handler that logs the error"""
+    import logging
+    import sys
+    import traceback
+    
+    logger = logging.getLogger('django.request')
+    exc_info = sys.exc_info()
+    
+    if exc_info and exc_info[0]:
+        logger.error(
+            'Internal Server Error: %s', request.path,
+            exc_info=exc_info,
+            extra={'status_code': 500, 'request': request}
+        )
+        
+        # Log the full traceback for easier debugging
+        logger.error('Traceback: %s', traceback.format_exc())
+    
+    # Call the default server_error view
+    return server_error(request, *args, **kwargs)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,3 +53,8 @@ urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(template_name='auth/logged_out.html'), name='logout'),
 ]
+
+# Register custom error handlers
+if not settings.DEBUG:
+    # Only use custom handlers in production
+    handler500 = custom_server_error
