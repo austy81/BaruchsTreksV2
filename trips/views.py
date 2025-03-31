@@ -1,10 +1,9 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from django.conf import settings
 import json
 import traceback
 import logging
 from django.http import HttpResponse, HttpResponseServerError
-from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .azure_service import AzureTableService
