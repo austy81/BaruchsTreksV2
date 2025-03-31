@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.conf import settings
 import json
-import sys
 import traceback
 import logging
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .azure_service import AzureTableService
 from .blob_service import AzureBlobService
@@ -107,6 +107,20 @@ def trip_detail(request, trip_id):
         'trip_photos': trip_photos
     })
 
+def admin_required(view_func):
+    """
+    Decorator that checks if a user is both authenticated and an admin.
+    Combines login_required and user_passes_test to ensure the user is logged in and is an admin.
+    """
+    # Check if user is an admin
+    def check_admin(user):
+        return user.is_staff or user.is_superuser
+    
+    # Apply both decorators
+    decorated_view = login_required(user_passes_test(check_admin)(view_func))
+    return decorated_view
+
+@admin_required
 def trip_edit(request, trip_id=None):
     """View function for creating or editing a trip"""
     try:

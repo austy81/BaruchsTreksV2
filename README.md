@@ -26,8 +26,8 @@ This project is configured for continuous deployment to Azure Web App using GitH
 ### Setting up Continuous Deployment
 
 1. **Create the Azure Web App**:
-   - Go to the Azure Portal and create a new Web App named "baruchstreks"
-   - Select Python 3.11 as the runtime stack
+   - Go to the Azure Portal and create a new Web App named "b-treks"
+   - Select Python 3.12 as the runtime stack
    - Configure the app to use Linux
 
 2. **Create Azure Credentials**:

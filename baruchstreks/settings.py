@@ -195,3 +195,8 @@ LOGGING = {
         },
     },
 }
+
+# Authentication settings
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/trips/'
+LOGOUT_REDIRECT_URL = '/trips/'
