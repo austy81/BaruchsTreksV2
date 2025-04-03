@@ -81,10 +81,13 @@ WSGI_APPLICATION = 'baruchstreks.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Check if running in Azure App Service
+IS_AZURE = os.environ.get('WEBSITE_SITE_NAME') is not None
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join('/home/site/wwwroot', 'db.sqlite3') if IS_AZURE else BASE_DIR / 'db.sqlite3',
     }
 }
 

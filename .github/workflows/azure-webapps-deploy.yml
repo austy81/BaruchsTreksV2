@@ -86,24 +86,24 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Create App Service Plan and Web App if they don't exist
-      - name: Create App Service Plan and Web App if they don't exist
-        run: |
-          # Check if the App Service Plan exists
-          if ! az appservice plan show --name ${{ env.AZURE_APP_PLAN }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} &>/dev/null; then
-            echo "Creating new App Service Plan: ${{ env.AZURE_APP_PLAN }}"
-            az appservice plan create --name ${{ env.AZURE_APP_PLAN }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --sku F1 --is-linux
-          else
-            echo "App Service Plan ${{ env.AZURE_APP_PLAN }} already exists"
-          fi
+      # # Create App Service Plan and Web App if they don't exist
+      # - name: Create App Service Plan and Web App if they don't exist
+      #   run: |
+      #     # Check if the App Service Plan exists
+      #     if ! az appservice plan show --name ${{ env.AZURE_APP_PLAN }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} &>/dev/null; then
+      #       echo "Creating new App Service Plan: ${{ env.AZURE_APP_PLAN }}"
+      #       az appservice plan create --name ${{ env.AZURE_APP_PLAN }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --sku F1 --is-linux
+      #     else
+      #       echo "App Service Plan ${{ env.AZURE_APP_PLAN }} already exists"
+      #     fi
           
-          # Check if the web app exists
-          if ! az webapp show --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} &>/dev/null; then
-            echo "Creating new web app: ${{ env.AZURE_WEBAPP_NAME }}"
-            az webapp create --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --plan ${{ env.AZURE_APP_PLAN }} --runtime "PYTHON:3.12"
-          else
-            echo "Web app ${{ env.AZURE_WEBAPP_NAME }} already exists"
-          fi
+      #     # Check if the web app exists
+      #     if ! az webapp show --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} &>/dev/null; then
+      #       echo "Creating new web app: ${{ env.AZURE_WEBAPP_NAME }}"
+      #       az webapp create --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --plan ${{ env.AZURE_APP_PLAN }} --runtime "PYTHON:3.12"
+      #     else
+      #       echo "Web app ${{ env.AZURE_WEBAPP_NAME }} already exists"
+      #     fi
 
       # # Configure Azure Web App
       # - name: Configure Azure Web App
