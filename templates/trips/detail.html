@@ -45,6 +45,9 @@
             <a href="{% url 'trips:trip_edit' trip_id=trip.row_key %}" class="btn btn-primary">
                 <i class="bi bi-pencil"></i> Edit Trip
             </a>
+            <a href="{% url 'trips:trip_copy' trip_id=trip.row_key %}" class="btn btn-outline-primary ms-2">
+                <i class="bi bi-files"></i> Copy Trip
+            </a>
             {% endif %}
             <a href="{% url 'trips:all_trips' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to All Trips

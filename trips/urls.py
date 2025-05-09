@@ -9,6 +9,7 @@ urlpatterns = [
     path('trip/new/', views.trip_edit, name='trip_create'),
     path('trip/<str:trip_id>/', views.trip_detail, name='trip_detail'),
     path('trip/<str:trip_id>/edit/', views.trip_edit, name='trip_edit'),
+    path('trip/<str:trip_id>/copy/', views.trip_copy, name='trip_copy'),
     path('debug/', views.debug_azure, name='debug_azure'),
     path('debug-logging/', views.debug_logging, name='debug_logging'),
 ]

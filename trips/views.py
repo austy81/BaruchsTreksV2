@@ -5,12 +5,39 @@ import traceback
 import logging
 from django.http import HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.urls import reverse
 
 from .azure_service import AzureTableService
 from .blob_service import AzureBlobService
 from .forms import TripEditForm
 
 logger = logging.getLogger(__name__)
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def trip_copy(request, trip_id):
+    """Copy a trip (except photos), add ' (copy)' to the title, and redirect to edit page for the new trip."""
+    service = get_data_service()
+    trip = service.get_trip_by_id(trip_id)
+    if not trip:
+        return HttpResponse('Original trip not found.', status=404)
+
+    # Prepare new trip data (exclude photos, add ' (copy)' to title)
+    new_trip_data = trip.copy()
+    new_trip_data['title'] = f"{trip.get('title', '')} (copy)"
+    new_trip_data.pop('row_key', None)
+    new_trip_data.pop('partition_key', None)
+    # Remove or reset any fields you do not want to copy (e.g., completion date, etc.)
+    # Optionally, clear trip_completed_on or other fields if needed
+    # new_trip_data['trip_completed_on'] = None
+
+    # Create the new trip
+    created, error_msg, new_row_key = service.create_trip(new_trip_data)
+    if not created:
+        return HttpResponse(f'Failed to copy trip: {error_msg}', status=500)
+
+    # Redirect to edit page for the new trip
+    return redirect(reverse('trips:trip_edit', kwargs={'trip_id': new_row_key}))
 
 def get_data_service():
     """Get the Azure Table service"""
