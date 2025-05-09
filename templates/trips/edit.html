@@ -37,6 +37,9 @@ Edit {{ trip.title }} - Baruch's Treks
         border-radius: 8px;
         margin-bottom: 1rem;
     }
+    .map-style-switcher {
+        margin-bottom: 1rem;
+    }
     .map-instructions {
         margin-bottom: 1rem;
         padding: 0.75rem;
@@ -272,6 +275,11 @@ Edit {{ trip.title }} - Baruch's Treks
                     </div>
                 </div>
                 
+                <!-- Map style switcher -->
+                <div class="map-style-switcher">
+                    <button type="button" id="trackingMapBtn" class="btn btn-outline-secondary btn-sm active">Tracking Map</button>
+                    <button type="button" id="winterMapBtn" class="btn btn-outline-secondary btn-sm">Winter Map</button>
+                </div>
                 <!-- Hidden fields for coordinates -->
                 {{ form.parking_json }}
                 {{ form.high_point_json }}
@@ -353,15 +361,54 @@ Edit {{ trip.title }} - Baruch's Treks
         let centerLng = 15.33;
         let defaultZoom = 10;
         
+        // Map tile layer URLs
+        const MAP_STYLES = {
+            tracking: {
+                url: `https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`,
+                attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>'
+            },
+            winter: {
+                url: `https://api.mapy.cz/v1/maptiles/winter/256/{z}/{x}/{y}?apikey=${API_KEY}`,
+                attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>'
+            }
+        };
+        let currentTileLayer = null;
+        
         // Initialize the map
         const map = L.map('map').setView([centerLat, centerLng], defaultZoom);
         
-        // Add the tile layer
-        L.tileLayer(`https://api.mapy.cz/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${API_KEY}`, {
+        // Add the default tile layer (tracking)
+        currentTileLayer = L.tileLayer(MAP_STYLES.tracking.url, {
             minZoom: 0,
             maxZoom: 19,
-            attribution: '<a href="https://api.mapy.cz/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
+            attribution: MAP_STYLES.tracking.attribution,
         }).addTo(map);
+        
+        // Map style switcher logic
+        document.getElementById('trackingMapBtn').addEventListener('click', function() {
+            if (currentTileLayer) {
+                map.removeLayer(currentTileLayer);
+            }
+            currentTileLayer = L.tileLayer(MAP_STYLES.tracking.url, {
+                minZoom: 0,
+                maxZoom: 19,
+                attribution: MAP_STYLES.tracking.attribution,
+            }).addTo(map);
+            this.classList.add('active');
+            document.getElementById('winterMapBtn').classList.remove('active');
+        });
+        document.getElementById('winterMapBtn').addEventListener('click', function() {
+            if (currentTileLayer) {
+                map.removeLayer(currentTileLayer);
+            }
+            currentTileLayer = L.tileLayer(MAP_STYLES.winter.url, {
+                minZoom: 0,
+                maxZoom: 19,
+                attribution: MAP_STYLES.winter.attribution,
+            }).addTo(map);
+            this.classList.add('active');
+            document.getElementById('trackingMapBtn').classList.remove('active');
+        });
         
         // Add the mapy.cz logo
         const LogoControl = L.Control.extend({
