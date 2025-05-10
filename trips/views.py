@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.conf import settings
 import json
 import traceback
@@ -12,6 +13,24 @@ from .blob_service import AzureBlobService
 from .forms import TripEditForm
 
 logger = logging.getLogger(__name__)
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def trip_delete(request, trip_id):
+    """Delete a trip and redirect to all trips with a message."""
+    if request.method == 'POST':
+        service = get_data_service()
+        try:
+            table_client = service.get_table_client()
+            table_client.delete_entity(partition_key='Trips', row_key=trip_id)
+            messages.success(request, 'Trip deleted successfully.')
+        except Exception as e:
+            logger.error(f"Error deleting trip {trip_id}: {str(e)}", exc_info=True)
+            messages.error(request, f'Failed to delete trip: {str(e)}')
+        return redirect('trips:all_trips')
+    else:
+        # Show confirmation page or redirect if GET
+        return render(request, 'trips/confirm_delete.html', {'trip_id': trip_id})
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)

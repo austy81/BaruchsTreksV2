@@ -48,6 +48,11 @@
             <a href="{% url 'trips:trip_copy' trip_id=trip.row_key %}" class="btn btn-outline-primary ms-2">
                 <i class="bi bi-files"></i> Copy Trip
             </a>
+            <form action="{% url 'trips:trip_delete' trip_id=trip.row_key %}" method="get" style="display:inline;">
+                <button type="submit" class="btn btn-outline-danger ms-2">
+                    <i class="bi bi-trash"></i> Delete Trip
+                </button>
+            </form>
             {% endif %}
             <a href="{% url 'trips:all_trips' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to All Trips
